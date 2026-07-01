@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EquiMarket • Horses Nationwide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap');
+        body { font-family: 'Inter', system_ui, sans-serif; }
+        .heading-serif { font-family: 'Playfair Display', Georgia, serif; }
+        .equestrian-bg { 
+            background: linear-gradient(rgba(22, 101, 52, 0.65), rgba(22, 101, 52, 0.75)), url('https://picsum.photos/id/1005/2000/1200'); 
+            background-size: cover; 
+            background-position: center; 
+        }
+        .horse-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .horse-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+        .modal { animation: modalPopIn 0.2s ease-out forwards; }
+        @keyframes modalPopIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    </style>
+</head>
+<body class="bg-[#F8F1E3] text-slate-800 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white border-b sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-emerald-700 rounded-2xl flex items-center justify-center text-white text-3xl">
+                    <i class="fa-solid fa-horse"></i>
+                </div>
+                <span class="text-3xl font-bold tracking-tighter text-emerald-700">EquiMarket</span>
+            </div>
+            <div class="flex gap-6 text-sm font-medium">
+                <button onclick="switchTab('marketplace')" class="hover:text-emerald-700">Browse</button>
+                <button onclick="switchTab('sell')" class="hover:text-emerald-700">Sell</button>
+                <button onclick="switchTab('dashboard')" class="hover:text-emerald-700">Dashboard</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <div class="equestrian-bg h-[420px] flex items-center text-white relative">
+        <div class="max-w-2xl mx-auto px-6 text-center z-10">
+            <h1 class="text-5xl font-bold tracking-tighter heading-serif">Horses Nationwide</h1>
+            <p class="mt-4 text-xl opacity-90">Buy. Sell. Connect. Trusted platform for horse lovers across the US.</p>
+            <button onclick="switchTab('marketplace')" class="mt-8 px-10 py-4 bg-white text-emerald-700 font-bold rounded-full text-lg">Browse Horses Now</button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Marketplace -->
+        <div id="marketplace-content">
+            <h2 class="text-3xl font-bold mb-6">Available Horses</h2>
+            <div id="horse-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Sell -->
+        <div id="sell-content" class="hidden">
+            <h2 class="text-3xl font-bold mb-6">List Your Horse</h2>
+            <div class="bg-white p-8 rounded-3xl shadow">
+                <input id="horse-name" placeholder="Horse Name" class="w-full mb-4 p-4 border rounded-2xl">
+                <button onclick="listHorse()" class="w-full py-6 bg-emerald-700 text-white font-bold rounded-3xl">List Horse</button>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard-content" class="hidden">
+            <h2 class="text-3xl font-bold mb-6">Your Dashboard</h2>
+            <div class="bg-white p-8 rounded-3xl">
+                <p class="text-4xl font-bold text-emerald-700">$12,450 Revenue</p>
+                <div class="mt-8 h-64">
+                    <canvas id="revenue-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let horses = [
+            { id: 1, name: "Thunder", breed: "Quarter Horse", price: 14500, location: "Browning, MT", image: "https://picsum.photos/id/1015/400/300" },
+            { id: 2, name: "Bella Rose", breed: "Arabian", price: 9800, location: "Kalispell, MT", image: "https://picsum.photos/id/201/400/300" },
+            { id: 3, name: "Chief", breed: "Paint Horse", price: 11200, location: "Missoula, MT", image: "https://picsum.photos/id/251/400/300" }
+        ];
+
+        function renderHorses() {
+            const grid = document.getElementById('horse-grid');
+            grid.innerHTML = horses.map(h => `
+                <div onclick="showDetail(${h.id})" class="horse-card bg-white rounded-3xl overflow-hidden cursor-pointer border">
+                    <img src="${h.image}" class="w-full h-48 object-cover">
+                    <div class="p-5">
+                        <div class="font-bold text-xl">${h.name}</div>
+                        <div class="text-emerald-700">${h.breed}</div>
+                        <div class="text-2xl font-bold mt-3">\[ {h.price.toLocaleString()}</div>
+                        <div class="text-sm text-slate-500">${h.location}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showDetail(id) {
+            const horse = horses.find(h => h.id === id);
+            alert(`Details for ${horse.name}\nBreed: ${horse.breed}\nPrice: \]{horse.price}\nLocation: ${horse.location}`);
+        }
+
+        function listHorse() {
+            const name = document.getElementById('horse-name').value || "New Horse";
+            horses.unshift({
+                id: Date.now(),
+                name: name,
+                breed: "Quarter Horse",
+                price: 12500,
+                location: "Your Location",
+                image: "https://picsum.photos/id/180/400/300"
+            });
+            renderHorses();
+            alert(`${name} listed successfully!`);
+            switchTab('marketplace');
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('#marketplace-content, #sell-content, #dashboard-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tab + '-content').classList.remove('hidden');
+            
+            if (tab === 'dashboard') {
+                setTimeout(() => {
+                    new Chart(document.getElementById('revenue-chart'), {
+                        type: 'line',
+                        data: { labels: ['Jan','Feb','Mar'], datasets: [{ data: [4000, 8200, 12450], borderColor: '#166534' }] }
+                    });
+                }, 100);
+            }
+        }
+
+        window.onload = () => {
+            renderHorses();
+            switchTab('marketplace');
+        };
+    </script>
+</body>
+</html>
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+app.use(express.static('.'));
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Basic payment endpoint (expand with Stripe later)
+app.post('/create-payment-intent', (req, res) => {
+  res.json({ clientSecret: 'demo-secret' });
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});{
+  "name": "equimarket",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5"
+  }
+}# Multi-stage build for production
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+COPY . .
+EXPOSE 3000
+CMD ["node", "server.js"]
